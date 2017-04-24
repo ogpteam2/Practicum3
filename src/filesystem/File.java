@@ -14,7 +14,7 @@ import be.kuleuven.cs.som.annotate.*;
  * @author 	Tommy Messelis, Robbe Louage, Elias Storme
  * @version	3.2 - 2016  
  */
-public class File extends DiskItem{
+public class File extends NonDir{
 
     /**********************************************************
      * Constructors
@@ -84,26 +84,6 @@ public class File extends DiskItem{
     public String toString(){
     	  return getName()+"."+getType().getExtension();
     }
-    
-	
-    /**********************************************************
-	 * delete/termination
-	 **********************************************************/
-    
-    
-    /**
-	 * Check whether this disk item can be terminated.
-	 * 
-	 * @return	True if the disk item is not yet terminated, is writable and it is either a root or
-	 * 			its parent directory is writable
-	 * 			| result == !isTerminated() && isWritable() && (isRoot() || getParentDirectory().isWritable())
-	 * @note	This specification can now be closed
-	 */
-    @Override
-    public boolean canBeTerminated(){
-    	// no additional implementation required
-		return super.canBeTerminated();
-	}
     
     
     /**********************************************************

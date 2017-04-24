@@ -110,11 +110,33 @@ public class Directory extends DiskItem {
 	 */
 	@Override
 	public boolean canBeTerminated() {
-		return getNbItems() == 0 && super.canBeTerminated();			
+		return getNbItems() == 0 && super.canBeTerminated() && (isRoot() || getParentDirectory().isWritable());			
 	}
 
+	@Override
+	public void terminate() throws IllegalStateException{
+		if(!isTerminated()){
+			if(!isRoot()){
+				try{
+					makeRoot();
+				}catch(DiskItemNotWritableException e){
+					//should not happen since this item and its parent are writable
+					assert false;
+				}
+			}
+			super.terminate();
+		}
+	}
 	
-	
+	@Override
+	public void deleteRecursive() throws IllegalStateException{
+		DirectoryIterator It = this.getIterator();
+		while(It.getNbRemainingItems()!=0){
+			It.getCurrentItem().deleteRecursive();
+			It.advance();
+		}
+		super.deleteRecursive();
+	}
 	
 	/**********************************************************
 	 * Contents
@@ -565,6 +587,37 @@ public class Directory extends DiskItem {
 			//this should not happen
 			assert false;
 		}
+	}
+	
+	/**********************************************************
+	 * Iteration
+	 **********************************************************/
+	
+	public DirectoryIterator getIterator(){
+		return new DirectoryIterator(){
+			private int current = 0;
+
+			@Override
+			public int getNbRemainingItems() {
+				return getNbItems() - current - 1;
+			}
+
+			@Override
+			public DiskItem getCurrentItem() throws IndexOutOfBoundsException {
+				if(getNbRemainingItems()==0)
+					throw new IndexOutOfBoundsException();
+				else return getItemAt(current);
+			}
+
+			@Override
+			public void advance() {
+				if(getNbRemainingItems()!=0) this.current++;
+			}
+
+			@Override
+			public void reset() {
+				this.current = 0;
+			}};
 	}
 	
 }
