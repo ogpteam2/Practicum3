@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="M:/Mijn Documenten/Dev/Unif/OGP/Practicum3/libs/AnnotationsDoclets.jar"/>
+	<classpathentry kind="lib" path="libs/AnnotationsDoclets.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
