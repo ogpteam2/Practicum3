@@ -91,8 +91,34 @@ public class Directory extends DiskItem {
 		this(parent,name,true);    
 	}    
 
+	/**********************************************************
+	 * writable
+	 **********************************************************/
 	
+	/**
+	 * Set the writability of this disk item to the given writability
+	 * 
+	 * @param 	isWritable
+	 * 			Writability to set the directory to.
+	 * @pre		The writability of a directory can only be changed when it is
+	 * 			writable to start with. So the only allowed operation is to make
+	 * 			it read only.
+	 * 			| writable = this.isWritable && isWritable 
+	 * @throws 	DiskItemNotWritableException
+	 * 			When the user tries to make a read only directory r/w again,
+	 * 			an exception is thrown
+	 * 			| if(!isWritable) throw DiskItemNotWritableException 
+	 * @note  	This specification is now closed
+	 */
 	
+	@Override
+	public void setWritable(boolean isWritable) throws DiskItemNotWritableException{
+		if(!this.isWritable()){
+			throw new DiskItemNotWritableException(this);
+		} else {
+			super.setWritable(isWritable);
+		}
+	}
 	
 	/**********************************************************
 	 * delete/termination
@@ -110,11 +136,33 @@ public class Directory extends DiskItem {
 	 */
 	@Override
 	public boolean canBeTerminated() {
-		return getNbItems() == 0 && super.canBeTerminated();			
+		return getNbItems() == 0 && super.canBeTerminated() && (isRoot() || getParentDirectory().isWritable());			
 	}
 
+	@Override
+	public void terminate() throws IllegalStateException{
+		if(!isTerminated()){
+			if(!isRoot()){
+				try{
+					makeRoot();
+				}catch(DiskItemNotWritableException e){
+					//should not happen since this item and its parent are writable
+					assert false;
+				}
+			}
+			super.terminate();
+		}
+	}
 	
-	
+	@Override
+	public void deleteRecursive() throws IllegalStateException{
+		DirectoryIterator It = this.getIterator();
+		while(It.getNbRemainingItems()!=0){
+			It.getCurrentItem().deleteRecursive();
+			It.advance();
+		}
+		super.deleteRecursive();
+	}
 	
 	/**********************************************************
 	 * Contents
@@ -567,5 +615,55 @@ public class Directory extends DiskItem {
 		}
 	}
 	
+	/**********************************************************
+	 * Iteration
+	 **********************************************************/
+	
+	public DirectoryIterator getIterator(){
+		return new DirectoryIterator(){
+			private int current = 0;
+
+			@Override
+			public int getNbRemainingItems() {
+				return getNbItems() - current - 1;
+			}
+
+			@Override
+			public DiskItem getCurrentItem() throws IndexOutOfBoundsException {
+				if(getNbRemainingItems()==0)
+					throw new IndexOutOfBoundsException();
+				else return getItemAt(current);
+			}
+
+			@Override
+			public void advance() {
+				if(getNbRemainingItems()!=0) this.current++;
+			}
+
+			@Override
+			public void reset() {
+				this.current = 0;
+			}};
+	}
+	
+	public String getAbsolutePath(){
+		String path = "";
+		if(!isRoot()){
+			path += this.getParentDirectory().getAbsolutePath();
+		}
+		path += "/" + this.getName();
+		return path;
+	}
+
+	@Override
+	public int getTotalDiskUsage() {
+		DirectoryIterator It = this.getIterator();
+		int size = 0;
+		while(It.getNbRemainingItems()!=0){
+			size += It.getCurrentItem().getTotalDiskUsage();
+			It.advance();
+		}
+		return size;
+	}
 	
 }

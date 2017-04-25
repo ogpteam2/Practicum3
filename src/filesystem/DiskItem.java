@@ -144,14 +144,14 @@ public abstract class DiskItem {
 	/**
 	 * Check whether this disk item can be terminated.
 	 * 
-	 * @return	True if the disk item is not yet terminated, is writable and it is either a root or
-	 * 			its parent directory is writable
-	 * 			| if (isTerminated() || !isWritable() || (!isRoot() && !getParentDirectory().isWritable()))
+	 * @return	True if the disk item is not yet terminated and is writable. Checking if the parent is
+	 * 			writable or if it is root cannot be done, as subclasses of DiskItem can be NonRoot
+	 * 			| if (isTerminated() || !isWritable()
 	 * 			| then result == false
 	 * @note	This specification must be left open s.t. the subclasses can change it
 	 */
 	public boolean canBeTerminated(){
-		return !isTerminated() && isWritable() && (isRoot() || getParentDirectory().isWritable());
+		return !isTerminated() && isWritable();
 	}
 
 	/**
@@ -167,24 +167,16 @@ public abstract class DiskItem {
 	 * 		   	| !isTerminated() && !canBeTerminated()
 	 */
 	public void terminate() throws IllegalStateException {
-		if(!isTerminated()){
-			if (!canBeTerminated()) {
-				throw new IllegalStateException("This item cannot be terminated");
-			}
-			if(!isRoot()){
-				try{
-					makeRoot();
-				}catch(DiskItemNotWritableException e){
-					//should not happen since this item and its parent are writable
-					assert false;
-				}
-			}
-			this.isTerminated = true;
+		if (!canBeTerminated()) {
+			throw new IllegalStateException("This item cannot be terminated");
 		}
-	}	
-
-
-
+		this.isTerminated = true;
+	}
+	
+	public void deleteRecursive() throws IllegalStateException{
+		this.terminate();
+	}
+	
 
 	/**********************************************************
 	 * name - total programming
@@ -526,6 +518,7 @@ public abstract class DiskItem {
 	 * @post  The given writability is registered as the new writability
 	 *        for this disk item.
 	 *        | new.isWritable() == isWritable
+	 * @note  The specification is left open.
 	 */
 	@Raw 
 	public void setWritable(boolean isWritable) {
@@ -808,5 +801,18 @@ public abstract class DiskItem {
 		return parentDirectory;
 	}
 
-
+	/**********************************************************
+	 * Recursive property generators
+	 **********************************************************/	
+	
+	/**
+	 * Recursively generates the path of the DiskItem.
+	 * 
+	 * @return Path of the called upon object in the filesystem
+	 */
+	
+	public abstract String getAbsolutePath();
+	
+	public abstract int getTotalDiskUsage();
+	
 }
