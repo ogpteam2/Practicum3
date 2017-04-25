@@ -91,8 +91,34 @@ public class Directory extends DiskItem {
 		this(parent,name,true);    
 	}    
 
+	/**********************************************************
+	 * writable
+	 **********************************************************/
 	
+	/**
+	 * Set the writability of this disk item to the given writability
+	 * 
+	 * @param 	isWritable
+	 * 			Writability to set the directory to.
+	 * @pre		The writability of a directory can only be changed when it is
+	 * 			writable to start with. So the only allowed operation is to make
+	 * 			it read only.
+	 * 			| writable = this.isWritable && isWritable 
+	 * @throws 	DiskItemNotWritableException
+	 * 			When the user tries to make a read only directory r/w again,
+	 * 			an exception is thrown
+	 * 			| if(!isWritable) throw DiskItemNotWritableException 
+	 * @note  	This specification is now closed
+	 */
 	
+	@Override
+	public void setWritable(boolean isWritable) throws DiskItemNotWritableException{
+		if(!this.isWritable()){
+			throw new DiskItemNotWritableException(this);
+		} else {
+			super.setWritable(isWritable);
+		}
+	}
 	
 	/**********************************************************
 	 * delete/termination
@@ -618,6 +644,26 @@ public class Directory extends DiskItem {
 			public void reset() {
 				this.current = 0;
 			}};
+	}
+	
+	public String getAbsolutePath(){
+		String path = "";
+		if(!isRoot()){
+			path += this.getParentDirectory().getAbsolutePath();
+		}
+		path += "/" + this.getName();
+		return path;
+	}
+
+	@Override
+	public int getTotalDiskUsage() {
+		DirectoryIterator It = this.getIterator();
+		int size = 0;
+		while(It.getNbRemainingItems()!=0){
+			size += It.getCurrentItem().getTotalDiskUsage();
+			It.advance();
+		}
+		return size;
 	}
 	
 }

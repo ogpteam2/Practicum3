@@ -114,9 +114,6 @@ public class File extends NonDir{
     public Type getType(){
     	  return type;
     }
-
-    
-    
     
     /**********************************************************
      * size - nominal programming
@@ -231,6 +228,24 @@ public class File extends NonDir{
         }else{
         	throw new DiskItemNotWritableException(this);
         }
+    }
+    
+    /**
+     * Generates the full name of the file assembled from name and file type
+     * 
+     * @return The full name of the file
+     */
+    
+    public String getAbsolutePath(){
+    	String path = "";
+    	path += this.getParentDirectory().getAbsolutePath();
+    	path += "/" + this.getName();
+    	path += "."  + this.getType().toString().toLowerCase();
+		return path;
+	}
+    
+    public int getTotalDiskUsage(){
+    	return this.getSize();
     }
     
 }

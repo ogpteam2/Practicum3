@@ -518,6 +518,7 @@ public abstract class DiskItem {
 	 * @post  The given writability is registered as the new writability
 	 *        for this disk item.
 	 *        | new.isWritable() == isWritable
+	 * @note  The specification is left open.
 	 */
 	@Raw 
 	public void setWritable(boolean isWritable) {
@@ -801,20 +802,17 @@ public abstract class DiskItem {
 	}
 
 	/**********************************************************
-	 * parent directory
+	 * Recursive property generators
 	 **********************************************************/	
 	
-	public String getAbsolutePath(){
-		String path = "";
-		if(isRoot()){
-			path = "/" + getName();
-		} else {
-			return getParentDirectory().getName() + "/" + getName(); 
-		}
-		if (this instanceof File) {
-			path += "." + ((File) this).getType();
-		}
-		return path;
-	}
+	/**
+	 * Recursively generates the path of the DiskItem.
+	 * 
+	 * @return Path of the called upon object in the filesystem
+	 */
+	
+	public abstract String getAbsolutePath();
+	
+	public abstract int getTotalDiskUsage();
 	
 }

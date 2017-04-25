@@ -38,5 +38,25 @@ public abstract class NonDir extends DiskItem{
 		//no additional code required
 		super.deleteRecursive();
 	}
+	
+	/**********************************************************
+     * writable
+     **********************************************************/
     
+    /**
+	 * Set the writability of this disk item to the given writability.
+	 *
+	 * @param isWritable
+	 *        The new writability
+	 * @post  The given writability is registered as the new writability
+	 *        for this disk item.
+	 *        | new.isWritable() == isWritable
+	 * @note  This specification is now closed
+	 */
+	
+	@Override
+	public void setWritable(boolean isWritable){
+		super.setWritable(isWritable);
+	}
+	
 }
